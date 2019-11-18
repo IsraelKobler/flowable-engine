@@ -82,6 +82,7 @@ public class HistoricTaskInstanceQueryRequest extends PaginateRequest {
     private Boolean withoutTenantId;
     private Boolean withoutDeleteReason;
     private String taskCandidateGroup;
+    private String taskCandidateUser;
 
     public String getTaskId() {
         return taskId;
@@ -517,4 +518,11 @@ public class HistoricTaskInstanceQueryRequest extends PaginateRequest {
         this.taskCandidateGroup = taskCandidateGroup;
     }
 
+    public String getTaskCandidateUser() {
+        return taskCandidateUser;
+    }
+
+    public void setTaskCandidateUser(String taskCandidateUser) {
+        this.taskCandidateUser = taskCandidateUser;
+    }
 }
