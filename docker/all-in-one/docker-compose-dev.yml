@@ -2,7 +2,7 @@ version: "2"
 
 services:
 
-  workflow-flowable:
+  flowable:
     build:
       context: ../../
       dockerfile: docker/all-in-one/Dockerfile
@@ -13,5 +13,3 @@ services:
       - flowable_user.env
     ports:
       - "8080:8080"
-    networks:
-      - product_b_default

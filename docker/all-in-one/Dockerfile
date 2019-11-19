@@ -25,6 +25,9 @@ RUN cd modules/flowable-ui-task && mvn -T 1C clean install -DskipTests -Pdocker-
 # build flowable-ui-admin && # copy flowable-ui-admin .war
 RUN cd modules/flowable-ui-admin && mvn -T 1C clean install -DskipTests -Pdocker-deps && cp flowable-ui-admin-app/target/*.original ../../../assets/
 
+# build flowable-rest && # copy flowable-rest .war
+RUN cd modules/flowable-app-rest &&  mvn -T 1C clean install -DskipTests -Pdocker-deps && cp target/*.original ../../../assets/
+
 
 FROM adoptopenjdk/openjdk11:alpine-jre
 ADD docker/all-in-one/wait-for-something.sh .
@@ -41,6 +44,7 @@ COPY --from=builder /usr/src/assets/flowable-idm.war.original /opt/tomcat/webapp
 COPY --from=builder /usr/src/assets/flowable-modeler.war.original /opt/tomcat/webapps/flowable-modeler.war
 COPY --from=builder /usr/src/assets/flowable-task.war.original /opt/tomcat/webapps/flowable-task.war
 COPY --from=builder /usr/src/assets/flowable-admin.war.original /opt/tomcat/webapps/flowable-admin.war
+COPY --from=builder /usr/src/assets/flowable-rest.war.original /opt/tomcat/webapps/flowable-rest.war
 
 RUN cd /opt/tomcat && chgrp -R tomcat /opt/tomcat && chmod -R g+r conf && chmod g+x conf && chown -R tomcat webapps/ work/ temp/ logs/ \
     && chown tomcat /wait-for-something.sh && chmod +x /wait-for-something.sh
