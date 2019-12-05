@@ -37,6 +37,7 @@ public class BaseHistoricTaskLogEntryBuilderImpl implements HistoricTaskLogEntry
     protected String scopeType;
     protected String tenantId;
     protected String taskId;
+    protected String assignee;
 
     public BaseHistoricTaskLogEntryBuilderImpl(TaskInfo task) {
         this.processInstanceId = task.getProcessInstanceId();
@@ -48,6 +49,7 @@ public class BaseHistoricTaskLogEntryBuilderImpl implements HistoricTaskLogEntry
         this.subScopeId = task.getSubScopeId();
         this.scopeType = task.getScopeType();
         this.taskId = task.getId();
+        this.assignee = task.getAssignee();
     }
 
     public BaseHistoricTaskLogEntryBuilderImpl() {
@@ -193,6 +195,14 @@ public class BaseHistoricTaskLogEntryBuilderImpl implements HistoricTaskLogEntry
     @Override
     public String getTenantId() {
         return tenantId;
+    }
+
+    public String getAssignee() {
+        return assignee;
+    }
+
+    public void setAssignee(String assignee) {
+        this.assignee = assignee;
     }
 
     @Override

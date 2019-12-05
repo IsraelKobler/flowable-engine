@@ -37,7 +37,8 @@ public class TaskAssigner implements JavaDelegate{
 		for (int g=0; g<userGroups.size(); g++) {
 			String currentGrouodId = userGroups.get(g).getId();
 
-			Map<String, Integer> userTaskCount = new HashMap<String, Integer>();
+			Map<User, Integer> userTaskCount = new HashMap<User, Integer>();
+
 			//  find all group candidate tasks for buyer group
 			TaskService taskService = Context.getProcessEngineConfiguration().getTaskService();
 
@@ -59,37 +60,61 @@ public class TaskAssigner implements JavaDelegate{
 
 				if (users.size() > 0) {
 
-					for (int i = 0; i < users.size(); i++) {
-						String userId = users.get(i).getId();
-						System.out.println((i + 1) + ") " + userId);
-						int numOfUserTasks = (int) taskService.createTaskQuery().taskAssignee(userId).count();
-						userTaskCount.put(userId, numOfUserTasks);
-						totalAssignedTasks = totalAssignedTasks + numOfUserTasks;
-					}
+					if (users.size() == 1) {
+						for (Task task : groupTasks) {
+							task.setAssignee(users.get(0).getId());
+						}
+					} else {
 
-					System.out.println("Total task assigned " + totalAssignedTasks);
-					System.out.println("Total task unassigned " + groupTasks.size());
+						for (int i = 0; i < users.size(); i++) {
+							String userId = users.get(i).getId();
+							System.out.println((i + 1) + ") " + userId);
+							int numOfUserTasks = (int) taskService.createTaskQuery().taskAssignee(userId).count();
+							userTaskCount.put(users.get(i), numOfUserTasks);
+							totalAssignedTasks = totalAssignedTasks + numOfUserTasks;
+						}
+
+						sort(userTaskCount);
+						System.out.println("Total task assigned " + totalAssignedTasks);
+						System.out.println("Total task unassigned " + groupTasks.size());
 
 
-					int averageNumOfTasks = 0;
-					if (users.size() > 0)
-						averageNumOfTasks = (totalAssignedTasks + groupTasks.size()) / users.size();
-					int taskIndex = 0;
-					for (User user : users) {
-						if (userTaskCount.get(user.getId()) < averageNumOfTasks) {
-							int numOfTasksCanAssignee = averageNumOfTasks - userTaskCount.get(user.getId());
+//						int averageNumOfTasks = 0;
+//						if (users.size() > 0)
+//							averageNumOfTasks = (totalAssignedTasks + groupTasks.size()) / users.size();
+//						int taskIndex = 0;
+//						for (Map.Entry<User, Integer> entry : userTaskCount.entrySet()) {
+//							if (userTaskCount.get(entry.getKey().getId()) < averageNumOfTasks) {
+//								int numOfTasksCanAssignee = averageNumOfTasks - entry.getValue();
+//
+//								while (taskIndex < groupTasks.size() && numOfTasksCanAssignee > 0) {
+//									groupTasks.get(taskIndex).setAssignee(entry.getKey().getId());
+//									taskIndex++;
+//									numOfTasksCanAssignee--;
+//								}
+//							}
+//						}
 
-							while (taskIndex < groupTasks.size() && numOfTasksCanAssignee > 0) {
-								groupTasks.get(taskIndex).setAssignee(user.getId());
-								taskIndex++;
-								numOfTasksCanAssignee--;
+						if (userTaskCount.size() > 0) {
+
+							int taskAssined = 0;
+							while (taskAssined < groupTasks.size()) {
+								Map.Entry<User, Integer> entry = userTaskCount.entrySet().iterator().next();
+								groupTasks.get(taskAssined).setAssignee(entry.getKey().getId());
+								entry.setValue(entry.getValue() + 1);
+								sort(userTaskCount);
+								taskAssined++;
 							}
 						}
 					}
-				}
 
+				}
 			}
 		}
 	    	    	    	
     }
+
+    private void sort(Map<User, Integer> userTaskCount){
+		userTaskCount.entrySet().stream().sorted(Map.Entry.<User, Integer>comparingByValue().reversed());
+	}
 }
