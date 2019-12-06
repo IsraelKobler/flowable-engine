@@ -53,7 +53,7 @@ public class TaskAssigner implements JavaDelegate{
 				}
 
 				// find all users for buyer group
-				int totalAssignedTasks = 0;
+				//int totalAssignedTasks = 0;
 				identityService = Context.getProcessEngineConfiguration().getIdentityService();
 				List<User> users = identityService.createUserQuery().memberOfGroup(currentGrouodId).list();
 				System.out.println(currentGrouodId + " Group have " + users.size() + " users:");
@@ -71,11 +71,11 @@ public class TaskAssigner implements JavaDelegate{
 							System.out.println((i + 1) + ") " + userId);
 							int numOfUserTasks = (int) taskService.createTaskQuery().taskAssignee(userId).count();
 							userTaskCount.put(users.get(i), numOfUserTasks);
-							totalAssignedTasks = totalAssignedTasks + numOfUserTasks;
+							//totalAssignedTasks = totalAssignedTasks + numOfUserTasks;
 						}
 
 						sort(userTaskCount);
-						System.out.println("Total task assigned " + totalAssignedTasks);
+						//System.out.println("Total task assigned " + totalAssignedTasks);
 						System.out.println("Total task unassigned " + groupTasks.size());
 
 
@@ -100,7 +100,10 @@ public class TaskAssigner implements JavaDelegate{
 							int taskAssined = 0;
 							while (taskAssined < groupTasks.size()) {
 								Map.Entry<User, Integer> entry = userTaskCount.entrySet().iterator().next();
-								groupTasks.get(taskAssined).setAssignee(entry.getKey().getId());
+								Task task = groupTasks.get(taskAssined);
+								task.setAssignee(entry.getKey().getId());
+								taskService.saveTask(task);
+								System.out.println("Assigned task "+task.getId() + " - " +task.getName()+ " To - "+entry.getKey().getEmail());
 								entry.setValue(entry.getValue() + 1);
 								sort(userTaskCount);
 								taskAssined++;
