@@ -99,6 +99,7 @@ public class TaskAssigner implements JavaDelegate{
 
 							int taskAssined = 0;
 							while (taskAssined < groupTasks.size()) {
+								printUsers(userTaskCount);
 								Map.Entry<User, Integer> entry = userTaskCount.entrySet().iterator().next();
 								Task task = groupTasks.get(taskAssined);
 								task.setAssignee(entry.getKey().getId());
@@ -117,7 +118,13 @@ public class TaskAssigner implements JavaDelegate{
 	    	    	    	
     }
 
-    private void sort(Map<User, Integer> userTaskCount){
+	private void printUsers(Map<User, Integer> userTaskCount) {
+		for (Map.Entry<User, Integer> entry : userTaskCount.entrySet()) {
+			System.out.println("User " + entry.getKey().getEmail() + " has " + entry.getValue() + " Tasks");
+		}
+	}
+
+	private void sort(Map<User, Integer> userTaskCount){
 		userTaskCount.entrySet().stream().sorted(Map.Entry.<User, Integer>comparingByValue().reversed());
 	}
 }

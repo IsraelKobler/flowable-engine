@@ -34,7 +34,7 @@ import java.util.concurrent.TimeoutException;
  */
 public class TaskCompleteListener implements TaskListener {
 
-    private Expression queuesName;
+    private Expression queueName;
     private Expression exchangeName;
     private Expression message;
     private Expression routingKey;
@@ -57,7 +57,7 @@ public class TaskCompleteListener implements TaskListener {
         System.out.println("AMQP User name: "+amqpUserName);
         System.out.println("AMQP password: "+amqpPassword);
 
-        String QUEUE_NAME = (String) queuesName.getValue(execution);
+        String QUEUE_NAME = (String) queueName.getValue(execution);
         String EXCHANGE_NAME = (String) exchangeName.getValue(execution);
         String ROUTING_KEY = (String) routingKey.getValue(execution);
         String MESSAGE = (String) message.getValue(execution);
