@@ -2,10 +2,7 @@ package org.flowable.engine.task;
 
 import org.flowable.engine.delegate.DelegateExecution;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.flowable.engine.*;
 import org.flowable.engine.delegate.JavaDelegate;
@@ -37,7 +34,7 @@ public class TaskAssigner implements JavaDelegate{
 		for (int g=0; g<userGroups.size(); g++) {
 			String currentGrouodId = userGroups.get(g).getId();
 
-			Map<User, Integer> userTaskCount = new HashMap<User, Integer>();
+			HashMap<User, Integer> userTaskCount = new HashMap<User, Integer>();
 
 			//  find all group candidate tasks for buyer group
 			TaskService taskService = Context.getProcessEngineConfiguration().getTaskService();
@@ -71,29 +68,10 @@ public class TaskAssigner implements JavaDelegate{
 							System.out.println((i + 1) + ") " + userId);
 							int numOfUserTasks = (int) taskService.createTaskQuery().taskAssignee(userId).count();
 							userTaskCount.put(users.get(i), numOfUserTasks);
-							//totalAssignedTasks = totalAssignedTasks + numOfUserTasks;
 						}
 
-						sort(userTaskCount);
-						//System.out.println("Total task assigned " + totalAssignedTasks);
+						userTaskCount = sortByValue(userTaskCount);
 						System.out.println("Total task unassigned " + groupTasks.size());
-
-
-//						int averageNumOfTasks = 0;
-//						if (users.size() > 0)
-//							averageNumOfTasks = (totalAssignedTasks + groupTasks.size()) / users.size();
-//						int taskIndex = 0;
-//						for (Map.Entry<User, Integer> entry : userTaskCount.entrySet()) {
-//							if (userTaskCount.get(entry.getKey().getId()) < averageNumOfTasks) {
-//								int numOfTasksCanAssignee = averageNumOfTasks - entry.getValue();
-//
-//								while (taskIndex < groupTasks.size() && numOfTasksCanAssignee > 0) {
-//									groupTasks.get(taskIndex).setAssignee(entry.getKey().getId());
-//									taskIndex++;
-//									numOfTasksCanAssignee--;
-//								}
-//							}
-//						}
 
 						if (userTaskCount.size() > 0) {
 
@@ -106,7 +84,7 @@ public class TaskAssigner implements JavaDelegate{
 								taskService.saveTask(task);
 								System.out.println("Assigned task "+task.getId() + " - " +task.getName()+ " To - "+entry.getKey().getEmail());
 								entry.setValue(entry.getValue() + 1);
-								sort(userTaskCount);
+								userTaskCount = sortByValue(userTaskCount);
 								taskAssined++;
 							}
 						}
@@ -124,7 +102,26 @@ public class TaskAssigner implements JavaDelegate{
 		}
 	}
 
-	private void sort(Map<User, Integer> userTaskCount){
-		userTaskCount.entrySet().stream().sorted(Map.Entry.<User, Integer>comparingByValue().reversed());
+	private HashMap<User, Integer> sortByValue(HashMap<User, Integer> hm)
+	{
+		// Create a list from elements of HashMap
+		List<Map.Entry<User, Integer> > list =
+				new LinkedList<>(hm.entrySet());
+
+		// Sort the list
+		Collections.sort(list, new Comparator<Map.Entry<User, Integer> >() {
+			public int compare(Map.Entry<User, Integer> o1,
+							   Map.Entry<User, Integer> o2)
+			{
+				return (o1.getValue()).compareTo(o2.getValue());
+			}
+		});
+
+		// put data from sorted list to hashmap
+		HashMap<User, Integer> temp = new LinkedHashMap<>();
+		for (Map.Entry<User, Integer> aa : list) {
+			temp.put(aa.getKey(), aa.getValue());
+		}
+		return temp;
 	}
 }
