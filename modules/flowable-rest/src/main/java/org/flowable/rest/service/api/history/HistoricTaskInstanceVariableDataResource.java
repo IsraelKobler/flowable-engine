@@ -44,13 +44,16 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import io.swagger.annotations.Authorization;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+import java.util.*;
 
 /**
  * @author Tijs Rademakers
  */
 @RestController
 @Api(tags = { "History Task" }, description = "Manage History Task Instances", authorizations = { @Authorization(value = "basicAuth") })
-public class HistoricTaskInstanceVariableDataResource {
+public class HistoricTaskInstanceVariableDataResource extends HistoricTaskInstanceBaseResource{
 
     @Autowired
     protected RestResponseFactory restResponseFactory;
@@ -97,6 +100,39 @@ public class HistoricTaskInstanceVariableDataResource {
         }
     }
 
+    @ApiOperation(value = "List variables for a historic task", tags = {"Task Variables" }, nickname = "listHistoricTaskVariables")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Indicates the historic task was found and the requested variables are returned"),
+            @ApiResponse(code = 404, message = "Indicates the requested historic task was not found..")
+    })
+    @ApiImplicitParams(@ApiImplicitParam(name = "scope", dataType = "string", value = "Scope of variable to be returned. When local, only task-local variable value is returned. When global, only variable value from the task’s parent execution-hierarchy are returned. When the parameter is omitted, a local variable will be returned if it exists, otherwise a global variable.", paramType = "query"))
+    @GetMapping(value = "/history/historic-task-instances/{taskId}/variables", produces = "application/json")
+    public List<RestVariable> getVariables(@ApiParam(name = "taskId") @PathVariable String taskId, @ApiParam(hidden = true) @RequestParam(value = "scope", required = false) String scope, HttpServletRequest request) {
+
+        // Check if it's a valid task to get the variables for
+        HistoricTaskInstance task = getHistoricTaskInstanceFromRequest(taskId);
+
+        Map<String, RestVariable> variableMap = new HashMap<>();
+
+
+        RestVariableScope variableScope = RestVariable.getScopeFromString(scope);
+        if (variableScope == null) {
+            // Use both local and global variables
+            addLocalVariables(task, variableMap);
+            addGlobalVariables(task, variableMap);
+
+        } else if (variableScope == RestVariableScope.GLOBAL) {
+            addGlobalVariables(task, variableMap);
+
+        } else if (variableScope == RestVariableScope.LOCAL) {
+            addLocalVariables(task, variableMap);
+        }
+
+        // Get unique variables from map
+        List<RestVariable> result = new ArrayList<>(variableMap.values());
+        return result;
+    }
+
     public RestVariable getVariableFromRequest(boolean includeBinary, String taskId, String variableName, String scope, HttpServletRequest request) {
         RestVariableScope variableScope = RestVariable.getScopeFromString(scope);
         HistoricTaskInstanceQuery taskQuery = historyService.createHistoricTaskInstanceQuery().taskId(taskId);
@@ -141,6 +177,30 @@ public class HistoricTaskInstanceVariableDataResource {
             throw new FlowableObjectNotFoundException("Historic task instance '" + taskId + "' variable value for " + variableName + " could not be found.", VariableInstanceEntity.class);
         } else {
             return restResponseFactory.createRestVariable(variableName, value, null, taskId, RestResponseFactory.VARIABLE_HISTORY_TASK, includeBinary);
+        }
+    }
+
+    private void addGlobalVariables(HistoricTaskInstance task, Map<String, RestVariable> variableMap) {
+        if (task.getExecutionId() != null) {
+            Map<String, Object> rawVariables = task.getProcessVariables();
+            List<RestVariable> globalVariables = restResponseFactory.createRestVariables(rawVariables, task.getId(), RestResponseFactory.VARIABLE_HISTORY_TASK, RestVariableScope.GLOBAL);
+
+            // Overlay global variables over local ones. In case they are present the values are not overridden,
+            // since local variables get precedence over global ones at all times.
+            for (RestVariable var : globalVariables) {
+                if (!variableMap.containsKey(var.getName())) {
+                    variableMap.put(var.getName(), var);
+                }
+            }
+        }
+    }
+
+    private void addLocalVariables(HistoricTaskInstance task, Map<String, RestVariable> variableMap) {
+        Map<String, Object> rawVariables = task.getTaskLocalVariables();
+        List<RestVariable> localVariables = restResponseFactory.createRestVariables(rawVariables, task.getId(), RestResponseFactory.VARIABLE_HISTORY_TASK, RestVariableScope.LOCAL);
+
+        for (RestVariable var : localVariables) {
+            variableMap.put(var.getName(), var);
         }
     }
 }
