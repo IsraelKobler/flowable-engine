@@ -279,11 +279,13 @@ public class HistoricTaskInstanceBaseResource {
     }
     
     protected HistoricTaskInstance getHistoricTaskInstanceFromRequest(String taskId) {
-        HistoricTaskInstance taskInstance = historyService.createHistoricTaskInstanceQuery().taskId(taskId).singleResult();
+        HistoricTaskInstanceQuery taskQuery = historyService.createHistoricTaskInstanceQuery().taskId(taskId);
+        taskQuery.includeTaskLocalVariables().includeProcessVariables().includeIdentityLinks();
+
+        HistoricTaskInstance taskInstance = taskQuery.singleResult();
         if (taskInstance == null) {
             throw new FlowableObjectNotFoundException("Could not find a task instance with id '" + taskId + "'.", HistoricTaskInstance.class);
         }
-        
         if (restApiInterceptor != null) {
             restApiInterceptor.accessHistoryTaskInfoById(taskInstance);
         }

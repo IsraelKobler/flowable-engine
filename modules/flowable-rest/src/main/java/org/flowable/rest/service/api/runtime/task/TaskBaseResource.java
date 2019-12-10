@@ -501,7 +501,10 @@ public class TaskBaseResource {
      * Get valid task from request. Throws exception if task does not exist or if task id is not provided.
      */
     protected Task getTaskFromRequest(String taskId) {
-        Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
+        TaskQuery taskQuery = taskService.createTaskQuery().taskId(taskId);
+        taskQuery.includeTaskLocalVariables().includeProcessVariables().includeIdentityLinks();
+
+        Task task = taskQuery.singleResult();
         if (task == null) {
             throw new FlowableObjectNotFoundException("Could not find a task with id '" + taskId + "'.", Task.class);
         }
