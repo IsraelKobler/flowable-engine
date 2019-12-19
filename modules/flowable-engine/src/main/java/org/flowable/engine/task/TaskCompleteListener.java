@@ -51,7 +51,7 @@ public class TaskCompleteListener implements TaskListener {
         final String amqpHost = env.getOrDefault("AMQP_HOST" ,"localhost");
         final String amqpPort = env.getOrDefault("AMQP_PORT" ,"5672");
         final String amqpUserName = env.getOrDefault("AMQP_USERNAME" , "guest");
-        final String amqpPassword = env.getOrDefault("AMQP_HOST" , "guest");
+        final String amqpPassword = env.getOrDefault("AMQP_PASSWORD" , "guest");
 
         System.out.println("AMQP Host: "+amqpHost);
         System.out.println("AMQP User name: "+amqpUserName);
