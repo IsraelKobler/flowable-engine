@@ -48,7 +48,7 @@ public class TaskCompleteListener implements TaskListener {
 //        delegateTask.setVariableLocal("myTaskVariable", "test");
         Map<String, String> env = System.getenv();
 
-        final String amqpHost = env.getOrDefault("AMQP_HOST" ,"localhost");
+        final String amqpHost = env.getOrDefault("AMQP_BASE_URL" ,"localhost");
         final String amqpPort = env.getOrDefault("AMQP_PORT" ,"5672");
         final String amqpUserName = env.getOrDefault("RABBITMQ_DEFAULT_USER" , "guest");
         final String amqpPassword = env.getOrDefault("RABBITMQ_DEFAULT_PASS" , "guest");
