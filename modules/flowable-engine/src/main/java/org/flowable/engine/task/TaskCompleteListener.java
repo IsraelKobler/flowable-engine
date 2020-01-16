@@ -53,14 +53,20 @@ public class TaskCompleteListener implements TaskListener {
         final String amqpUserName = env.getOrDefault("RABBITMQ_DEFAULT_USER" , "guest");
         final String amqpPassword = env.getOrDefault("RABBITMQ_DEFAULT_PASS" , "guest");
 
-        System.out.println("AMQP Host: "+amqpHost);
-        System.out.println("AMQP User name: "+amqpUserName);
-        System.out.println("AMQP password: "+amqpPassword);
+        System.out.println("amqpHost: "+amqpHost);
+        System.out.println("amqpPort: "+amqpPort);
+        System.out.println("amqpUserName: "+amqpUserName);
+        System.out.println("amqpPassword: "+amqpPassword);
 
         String QUEUE_NAME = (String) queueName.getValue(execution);
         String EXCHANGE_NAME = (String) exchangeName.getValue(execution);
         String ROUTING_KEY = (String) routingKey.getValue(execution);
         String MESSAGE = (String) message.getValue(execution);
+
+        System.out.println("EXCHANGE_NAME: "+EXCHANGE_NAME);
+        System.out.println("QUEUE_NAME: "+QUEUE_NAME);
+        System.out.println("ROUTING_KEY: "+ROUTING_KEY);
+        System.out.println("MESSAGE: "+MESSAGE);
 
         ConnectionFactory factory = new ConnectionFactory();
         factory.setHost(amqpHost);
